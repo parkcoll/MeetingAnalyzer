@@ -24,8 +24,10 @@ def main():
             return
 
         params = st.query_params
+        logger.info(f"Query parameters: {params}")
 
         if "code" in params:
+            logger.info("OAuth code found in query parameters")
             calendar_service = handle_google_callback(params["code"])
             if calendar_service:
                 st.session_state.calendar_service = calendar_service
@@ -52,17 +54,16 @@ def main():
             show_manual_report(st.session_state.calendar_service)
         elif page == "Settings":
             show_settings(st.session_state.calendar_service)
+
+        # Add debug information
+        st.sidebar.markdown("---")
+        st.sidebar.subheader("Debug Information")
+        st.sidebar.text(f"Redirect URI: https://meetmetricsanalyzer.streamlit.app")
+        st.sidebar.text(f"Session State Keys: {list(st.session_state.keys())}")
+        
     except Exception as e:
         logger.error(f"An error occurred in the main function: {str(e)}")
         st.error("An unexpected error occurred. Please try refreshing the page or contact support if the issue persists.")
-
-def debug_info():
-    st.header("Debug Information")
-    st.write(f"Redirect URI: https://meetmetricsanalyzer.streamlit.app")
-    st.write(f"Session State Keys: {list(st.session_state.keys())}")
-    st.write(f"Query Parameters: {st.query_params}")
-    st.write(f"Current Working Directory: {os.getcwd()}")
-    st.write(f"Environment Variables: {list(os.environ.keys())}")
 
 def show_dashboard(calendar_service):
     st.header("Dashboard")

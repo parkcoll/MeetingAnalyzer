@@ -1,38 +1,38 @@
+import os
 import streamlit as st
-from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
-import os
-import json
+from calendar_services import GoogleCalendarService
 import logging
-from calendar_services import GoogleCalendarService, OutlookCalendarService, AppleCalendarService
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Set up the scopes required for Google Calendar API
+# If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
-def authenticate_calendar_service(service_type):
-    logger.info(f"Starting {service_type} authentication process")
-    
-    if service_type == "Google":
+def authenticate_calendar_service(calendar_type):
+    if calendar_type == "Google":
         return authenticate_google()
-    elif service_type == "Outlook":
+    elif calendar_type == "Outlook":
         return authenticate_outlook()
-    elif service_type == "Apple":
+    elif calendar_type == "Apple":
         return authenticate_apple()
     else:
-        logger.error(f"Unsupported calendar service: {service_type}")
+        st.error(f"Unsupported calendar type: {calendar_type}")
         return None
 
 def authenticate_google():
-    credentials = None
-    if 'google_credentials' in st.session_state:
-        logger.info("Found existing Google credentials in session state")
-        credentials = st.session_state.google_credentials
-    else:
+    logger.info("Starting Google authentication process")
+    credentials = st.session_state.get('google_credentials')
+
+    if not credentials or not credentials.valid:
+        if not verify_environment_variables():
+            logger.error("Authentication failed: Missing Google API credentials")
+            st.error("Authentication failed: Missing Google API credentials. Please contact the administrator.")
+            return None
+
         logger.info("No existing Google credentials found, starting OAuth flow")
         client_config = {
             "web": {
@@ -43,10 +43,14 @@ def authenticate_google():
             }
         }
         
+        # Use a generic redirect URI
+        redirect_uri = "http://localhost:5000"
+        logger.info(f"Using redirect URI: {redirect_uri}")
+        
         flow = Flow.from_client_config(
             client_config,
             scopes=SCOPES,
-            redirect_uri='https://meetmetricsanalyzer.streamlit.app'
+            redirect_uri=redirect_uri
         )
 
         auth_url, _ = flow.authorization_url(prompt='consent')
@@ -95,10 +99,15 @@ def handle_google_callback(code):
                 "token_uri": "https://oauth2.googleapis.com/token"
             }
         }
+        
+        # Use a generic redirect URI
+        redirect_uri = "http://localhost:5000"
+        logger.info(f"Using redirect URI in callback: {redirect_uri}")
+        
         flow = Flow.from_client_config(
             client_config,
             scopes=SCOPES,
-            redirect_uri='https://meetmetricsanalyzer.streamlit.app'
+            redirect_uri=redirect_uri
         )
         logger.info("Flow object created successfully")
         

@@ -16,11 +16,16 @@ To deploy this Streamlit app to Streamlit Cloud, follow these steps:
 
    Make sure to use the same values you've been using in your local development environment.
 
-6. Click "Deploy" to start the deployment process.
+6. Before deploying, make sure to install all required packages by running:
+   ```
+   pip install -r requirements.txt
+   ```
 
-7. Once deployed, Streamlit Cloud will provide you with a URL for your app.
+7. Click "Deploy" to start the deployment process.
 
-8. Update your Google Cloud Console project to add the new Streamlit Cloud URL to the list of authorized redirect URIs.
+8. Once deployed, Streamlit Cloud will provide you with a URL for your app.
+
+9. Update your Google Cloud Console project to add the new Streamlit Cloud URL to the list of authorized redirect URIs.
 
 Note: Make sure your GitHub repository is public or that you have linked your GitHub account with Streamlit Cloud for private repositories.
 
