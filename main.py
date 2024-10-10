@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from auth import authenticate_calendar_service, handle_google_callback, verify_environment_variables
+from auth import authenticate_calendar_service, handle_google_callback, verify_environment_variables, clear_authentication
 from data_processor import analyze_calendar_data
 from visualizer import create_visualizations
 from email_sender import send_email_report
@@ -31,6 +31,8 @@ def main():
             calendar_service = handle_google_callback(params["code"])
             if calendar_service:
                 st.session_state.calendar_service = calendar_service
+                # Clear the 'code' parameter from the URL
+                st.experimental_set_query_params()
             st.rerun()
 
         calendar_type = st.sidebar.selectbox("Select Calendar Service", ["Google", "Outlook", "Apple"])
@@ -41,7 +43,11 @@ def main():
                 st.session_state.calendar_service = calendar_service
             else:
                 if calendar_type == "Google":
-                    st.info(f"To use this app, you need to authenticate with {calendar_type} Calendar. Follow the instructions above to start the authentication process.")
+                    st.info("To use this app, you need to authenticate with Google Calendar. Follow the instructions below to start the authentication process.")
+                    st.warning("IMPORTANT: Do not reuse the authorization URL. If you encounter an error, please use the 'Start Over' button below to restart the authentication process.")
+                    if st.button("Start Over"):
+                        clear_authentication()
+                        st.rerun()
                 else:
                     st.info(f"{calendar_type} Calendar integration is not yet implemented. Please choose Google Calendar for now.")
                 return
@@ -64,6 +70,9 @@ def main():
         
     except Exception as e:
         logger.error(f"An error occurred in the main function: {str(e)}")
+        logger.error(f"Stack trace: {logging.traceback.format_exc()}")
+        logger.error(f"Timestamp: {datetime.now().isoformat()}")
+        logger.error(f"Session state: {st.session_state}")
         st.error("An unexpected error occurred. Please try refreshing the page or contact support if the issue persists.")
 
 def show_dashboard(calendar_service):
@@ -169,6 +178,12 @@ def show_settings(calendar_service):
             st.success("Weekly report scheduled successfully!")
         else:
             st.error("Please save your email address before scheduling reports.")
+
+    st.subheader("Authentication")
+    if st.button("Clear Authentication Data"):
+        clear_authentication()
+        st.success("Authentication data cleared. Please restart the authentication process.")
+        st.rerun()
 
 if __name__ == "__main__":
     main()

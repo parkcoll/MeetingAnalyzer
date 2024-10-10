@@ -4,6 +4,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from calendar_services import GoogleCalendarService
 import logging
+from datetime import datetime, timedelta
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -11,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+
+# Store used authorization codes
+used_auth_codes = set()
 
 def authenticate_calendar_service(calendar_type):
     if calendar_type == "Google":
@@ -43,7 +47,6 @@ def authenticate_google():
             }
         }
         
-        # Updated redirect URI
         redirect_uri = 'https://meetmetricsanalyzer.streamlit.app/'
         logger.info(f"Using redirect URI: {redirect_uri}")
         
@@ -91,6 +94,12 @@ def handle_google_callback(code):
             st.error("Authentication failed: Missing Google API credentials. Please contact the administrator.")
             return None
 
+        # Check if the code has been used before
+        if code in used_auth_codes:
+            logger.error(f"Authorization code has been used before: {code}")
+            st.error("This authorization code has already been used. Please start the authentication process again.")
+            return None
+
         client_config = {
             "web": {
                 "client_id": os.environ['GOOGLE_CLIENT_ID'],
@@ -100,7 +109,6 @@ def handle_google_callback(code):
             }
         }
         
-        # Updated redirect URI
         redirect_uri = 'https://meetmetricsanalyzer.streamlit.app/'
         logger.info(f"Using redirect URI in callback: {redirect_uri}")
         
@@ -114,8 +122,15 @@ def handle_google_callback(code):
         try:
             flow.fetch_token(code=code)
             logger.info("Token fetched successfully")
+            
+            # Mark the code as used
+            used_auth_codes.add(code)
+            
         except Exception as token_error:
             logger.error(f"Error fetching token: {str(token_error)}")
+            logger.error(f"Stack trace: {logging.traceback.format_exc()}")
+            logger.error(f"Timestamp: {datetime.now().isoformat()}")
+            logger.error(f"Session state: {st.session_state}")
             st.error("Failed to authenticate. Please try again or contact support if the issue persists.")
             return None
         
@@ -126,5 +141,16 @@ def handle_google_callback(code):
         return GoogleCalendarService(credentials)
     except Exception as e:
         logger.error(f"Error during Google authentication: {str(e)}")
+        logger.error(f"Stack trace: {logging.traceback.format_exc()}")
+        logger.error(f"Timestamp: {datetime.now().isoformat()}")
+        logger.error(f"Session state: {st.session_state}")
         st.error("Authentication failed. Please try again or contact support if the issue persists.")
         return None
+
+def clear_authentication():
+    if 'google_credentials' in st.session_state:
+        del st.session_state.google_credentials
+    if 'calendar_service' in st.session_state:
+        del st.session_state.calendar_service
+    used_auth_codes.clear()
+    logger.info("Authentication data cleared")
