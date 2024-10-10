@@ -43,8 +43,8 @@ def authenticate_google():
             }
         }
         
-        # Use a generic redirect URI
-        redirect_uri = "http://localhost:5000"
+        # Updated redirect URI
+        redirect_uri = 'https://meetmetricsanalyzer.streamlit.app/'
         logger.info(f"Using redirect URI: {redirect_uri}")
         
         flow = Flow.from_client_config(
@@ -100,8 +100,8 @@ def handle_google_callback(code):
             }
         }
         
-        # Use a generic redirect URI
-        redirect_uri = "http://localhost:5000"
+        # Updated redirect URI
+        redirect_uri = 'https://meetmetricsanalyzer.streamlit.app/'
         logger.info(f"Using redirect URI in callback: {redirect_uri}")
         
         flow = Flow.from_client_config(

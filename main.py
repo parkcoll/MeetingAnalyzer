@@ -58,7 +58,8 @@ def main():
         # Add debug information
         st.sidebar.markdown("---")
         st.sidebar.subheader("Debug Information")
-        st.sidebar.text(f"Redirect URI: https://meetmetricsanalyzer.streamlit.app")
+        redirect_uri = 'https://meetmetricsanalyzer.streamlit.app/'
+        st.sidebar.text(f"Redirect URI: {redirect_uri}")
         st.sidebar.text(f"Session State Keys: {list(st.session_state.keys())}")
         
     except Exception as e:

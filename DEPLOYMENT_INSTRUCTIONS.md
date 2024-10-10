@@ -25,7 +25,14 @@ To deploy this Streamlit app to Streamlit Cloud, follow these steps:
 
 8. Once deployed, Streamlit Cloud will provide you with a URL for your app.
 
-9. Update your Google Cloud Console project to add the new Streamlit Cloud URL to the list of authorized redirect URIs.
+9. Update your Google Cloud Console project:
+   - Go to the Google Cloud Console (https://console.cloud.google.com/)
+   - Select your project
+   - Navigate to "APIs & Services" > "Credentials"
+   - Edit your OAuth 2.0 Client ID
+   - Add the following URL to the list of authorized redirect URIs:
+     https://meetmetricsanalyzer.streamlit.app/
+   - Save the changes
 
 Note: Make sure your GitHub repository is public or that you have linked your GitHub account with Streamlit Cloud for private repositories.
 
